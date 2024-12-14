@@ -1,0 +1,1 @@
+[{"val": "int", "type": "type"}, {"val": "x", "type": "identifier"}, {"val": "=", "type": "assign"}, {"val": "10", "type": "int"}, {"val": "\n", "type": "newline"}, {"val": "\n", "type": "newline"}, {"val": "print", "type": "identifier"}, {"val": "(", "type": "parenteses"}, {"val": "x", "type": "identifier"}, {"val": ")", "type": "parenteses"}, {"val": "\n", "type": "newline"}]

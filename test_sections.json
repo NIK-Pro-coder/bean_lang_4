@@ -1,0 +1,1 @@
+[{"type": "varDeclare", "fields": {"type": "int", "name": "x", "val": [{"val": "10", "type": "int"}]}}, {"type": "funcCall", "fields": {"name": "print", "params": [[{"val": "x", "type": "identifier"}]]}}]
