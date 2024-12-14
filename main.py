@@ -403,6 +403,17 @@ def funcCall(name: str, params: list[list[dict[str, str]]]) :
 	if returns != None :
 		err(res, "UnusedReturn", f"Return value is unused", [name], False)
 
+@addHandler
+def ifStatement(cond: list[dict[str, str]], body: list[dict], elif_body: list[dict], else_body: list[dict]) :
+	res = [
+		{"val": "if", "type": "identifier"}
+	]
+	res.extend(cond)
+	res.append({"val": "{", "type": "parenteses"})
+	res.append({"val": "\n", "type": "newline"})
+
+	err(res, "c", "a", [])
+
 def doSection(sec) :
 	sec_type = sec["type"]
 	sec_fields = sec["fields"]
@@ -417,5 +428,3 @@ for sec in sections :
 if "save-vars" in flags :
 	with open(filename[:filename.rfind(".")] + "_variables.json", "w") as f :
 		f.write(json.dumps(cleanJson(scopes)))
-
-print()

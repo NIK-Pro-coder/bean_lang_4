@@ -45,7 +45,6 @@ def parseSections(tokens: list[dict[str, str]], err: Callable | None = None) -> 
 		start = [line].copy()[0]
 		tkn = getNext()
 
-
 		while not(tkn["type"] == token_type\
 		or (token_type.startswith("!") and tkn["val"] == token_type[1:])) :
 			tkns.append(tkn)
@@ -117,6 +116,7 @@ def parseSections(tokens: list[dict[str, str]], err: Callable | None = None) -> 
 
 			elf = []
 
+
 			while ntk["val"] == "elif" :
 				elif_cond = until("!{")
 				if not elif_cond : exit(1)
@@ -126,10 +126,9 @@ def parseSections(tokens: list[dict[str, str]], err: Callable | None = None) -> 
 					"res": elif_res
 				})
 
-			if not expect("!{") : exit(1)
-
 			el = []
 			if ntk["val"] == "else" :
+				if not expect("!{") : exit(1)
 				el, _ = codeblock()
 
 			sections.append({

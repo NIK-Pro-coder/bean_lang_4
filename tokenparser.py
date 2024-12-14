@@ -51,6 +51,7 @@ def parseTokens(text: str) -> list[dict[str, str]] :
 	tokens = []
 	for type in token_types :
 		for tkn in token_types[type] :
+			print(type, list(re.finditer(tkn, text)))
 			for i in re.finditer(tkn, text) :
 				add = True
 				span_i = i.span()
@@ -75,5 +76,6 @@ def parseTokens(text: str) -> list[dict[str, str]] :
 		}
 		for x in tokens
 	]
+	print(tokens)
 
 	return tokens
