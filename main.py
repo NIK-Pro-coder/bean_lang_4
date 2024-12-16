@@ -66,6 +66,10 @@ scopes = [
 	}
 ]
 
+from copy import deepcopy
+
+all_scopes = []
+
 def evalExpr(expr: list[dict[str, str]]) -> dict[str, str] | tuple[str, str] :
 
 	vars = {}
@@ -179,6 +183,8 @@ def varDeclare(var_type: str, name: str, val: list[dict[str, str]]) :
 			"const": False
 		}
 
+	all_scopes.append(deepcopy(scopes))
+
 @addHandler
 def constDeclare(var_type: str, name: str, val: list[dict[str, str]]) :
 	res = [
@@ -232,6 +238,8 @@ def constDeclare(var_type: str, name: str, val: list[dict[str, str]]) :
 			"const": True
 		}
 
+	all_scopes.append(deepcopy(scopes))
+
 @addHandler
 def varUpdate(name: str, act: str, val: list[dict[str, str]]) :
 	res = [
@@ -284,6 +292,8 @@ def varUpdate(name: str, act: str, val: list[dict[str, str]]) :
 			scopes[len(scopes) - n - 1][name] = ret
 			break
 
+	all_scopes.append(deepcopy(scopes))
+
 @addHandler
 def funcDefine(name: str, params: list[dict[str, str]], ret: str, body: list[dict]) :
 	res = [
@@ -322,6 +332,8 @@ def funcDefine(name: str, params: list[dict[str, str]], ret: str, body: list[dic
 		"res": body,
 		"ret": ret,
 	})
+
+	all_scopes.append(deepcopy(scopes))
 
 @addHandler
 def returnStatement(pars: list[list[dict[str, str]]]) -> list[dict[str, str]] | None :
@@ -453,9 +465,6 @@ def ifStatement(cond: list[dict[str, str]], body: list[dict], elif_body: list[di
 		for e in elif_body :
 			ret = evalExpr(e["cond"])
 
-			print(e["cond"])
-			print(ret)
-
 			if type(ret) is tuple :
 				err(res, ret[0], ret[1], [x["val"] for x in cond])
 				return
@@ -482,4 +491,4 @@ for sec in sections :
 
 if "save-vars" in flags :
 	with open(filename[:filename.rfind(".")] + "_variables.json", "w") as f :
-		f.write(json.dumps(cleanJson(scopes)))
+		f.write(json.dumps(cleanJson(all_scopes)))
