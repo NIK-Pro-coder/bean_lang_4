@@ -60,15 +60,39 @@ handlers = {}
 def addHandler(func) :
 	handlers[func.__name__] = func
 
+def basePrint(x) :
+	print(x["val"].strip("\""), end = "\n")
+	scopes[0]["STDOUT"]["val"] = x["val"].strip("\"")
+
+	return {
+		"type": "void",
+		"val": ""
+	}
+
+def baseInput(x) :
+	grab = input(x["val"].strip("\""))
+
+	if grab == "" :
+		print("Input recieved was blank...")
+		exit(1)
+
+	return {
+		"val": "\"" + grab + "\"",
+		"type": "str"
+	}
+
 scopes = [
 	{
-		"print": (lambda x : print(x["val"], end = ""))
+		"print": basePrint,
+		"input": baseInput,
+		"STDOUT": {"val": '""', "type": "str"}
 	}
 ]
-
 from copy import deepcopy
 
-all_scopes = []
+all_scopes = [
+	deepcopy(scopes)
+]
 
 def evalExpr(expr: list[dict[str, str]]) -> dict[str, str] | tuple[str, str] :
 
@@ -384,8 +408,7 @@ def callFunc(name: str, params: list[list[dict[str, str]]]) -> None | list[dict[
 		push.append(ret)
 
 	if callable(func) :
-		func(*push)
-		return
+		return func(*push)
 
 	in_types = [x["type"] for x in push]
 	over_types = [[y["type"] for y in x["params"]] for x in func["over"]]
@@ -429,11 +452,13 @@ def funcCall(name: str, params: list[list[dict[str, str]]]) :
 
 	returns = callFunc(name, params)
 
+	all_scopes.append(deepcopy(scopes))
+
 	if type(returns) is tuple :
 		err(res, returns[0], returns[1], [name])
 		return
 
-	if returns != None :
+	if returns != None and returns["type"] != "void" :
 		err(res, "UnusedReturn", f"Return value is unused", [name], False)
 
 falsy = {
@@ -482,9 +507,13 @@ def doSection(sec) :
 	sec_type = sec["type"]
 	sec_fields = sec["fields"]
 
-	return handlers[sec_type](
-		*sec_fields.values()
-	)
+	if sec_type in handlers :
+		return handlers[sec_type](
+			*sec_fields.values()
+		)
+
+	print(f"A section handler for sections of type \"{sec_type}\", has not been implemented yet :(")
+	exit(1)
 
 for sec in sections :
 	doSection(sec)

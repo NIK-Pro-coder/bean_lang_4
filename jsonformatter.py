@@ -19,7 +19,7 @@ def formatJson(obj) :
 
 def cleanJson(js) :
 	if callable(js) :
-		return "Function"
+		return "<non JSON-serializable python function>"
 
 	if type(js) is dict :
 		cl = {}
