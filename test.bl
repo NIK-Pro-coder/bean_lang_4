@@ -1,4 +1,7 @@
 
-str c = input("name: ")
+int x = 500
 
-print(c)
+while x > 0 {
+	print("x is " >< x)
+	x -= 1
+}

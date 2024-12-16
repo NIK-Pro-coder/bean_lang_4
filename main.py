@@ -272,12 +272,14 @@ def varUpdate(name: str, act: str, val: list[dict[str, str]]) :
 	]
 	res.extend(val)
 
+	actual = deepcopy(val)
+
 	if len(act) > 1 :
-		val.insert(0, {
+		actual.insert(0, {
 			"val": act[0],
 			"type": "Op"
 		})
-		val.insert(0, {
+		actual.insert(0, {
 			"val": name,
 			"type": "identifier"
 		})
@@ -297,7 +299,7 @@ def varUpdate(name: str, act: str, val: list[dict[str, str]]) :
 
 	var_type = vars[name]["type"]
 
-	ret = evalExpr(val)
+	ret = evalExpr(actual)
 
 	if type(ret) is tuple :
 		err(res, ret[0], ret[1], [x["val"] for x in val])
@@ -313,7 +315,11 @@ def varUpdate(name: str, act: str, val: list[dict[str, str]]) :
 
 	for n,i in enumerate(scopes[::-1]) :
 		if name in i :
-			scopes[len(scopes) - n - 1][name] = ret
+			scopes[len(scopes) - n - 1][name] = {
+				"val": ret["val"],
+				"type": ret["type"],
+				"const": False
+			}
 			break
 
 	all_scopes.append(deepcopy(scopes))
@@ -502,6 +508,36 @@ def ifStatement(cond: list[dict[str, str]], body: list[dict], elif_body: list[di
 
 		for i in else_body :
 			doSection(i)
+
+@addHandler
+def whileLoop(cond: list[dict[str, str]], body: list[dict]) :
+	res = [
+		{"val": "while", "type": "identifier"}
+	]
+	res.extend(cond)
+	res.append({"val": "{", "type": "parenteses"})
+
+	if not [x for x in body if x["type"] == "varUpdate"] :
+		err(res, "InfiniteLoop", "While loop contains no variable changes, it will be infinite", [])
+		return
+
+	ret = evalExpr(cond)
+
+	if type(ret) is tuple :
+		err(res, ret[0], ret[1], [x["val"] for x in cond])
+		return
+	if not(type(ret) is dict) : return
+
+	while ret["val"] != falsy[ret["type"]] :
+		for i in body :
+			doSection(i)
+
+		ret = evalExpr(cond)
+
+		if type(ret) is tuple :
+			err(res, ret[0], ret[1], [x["val"] for x in cond])
+			return
+		if not(type(ret) is dict) : return
 
 def doSection(sec) :
 	sec_type = sec["type"]
