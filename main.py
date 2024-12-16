@@ -85,7 +85,7 @@ scopes = [
 	{
 		"print": basePrint,
 		"input": baseInput,
-		"STDOUT": {"val": '""', "type": "str"}
+		"STDOUT": {"val": '""', "type": "str", "const": True}
 	}
 ]
 from copy import deepcopy
