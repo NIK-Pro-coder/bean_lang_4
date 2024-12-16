@@ -185,24 +185,56 @@ operands = {
 		}
 	},
 	">=": {
+		"int int": lambda x,y : {
+			"type": "bool",
+			"val": "true" if int(x) >= int(y) else "false"
+		},
+		"float float": lambda x,y : {
+			"type": "bool",
+			"val": "true" if float(x) >= float(y) else "false"
+		},
 		"* *": lambda x,y : {
 			"type": "bool",
 			"val": "true" if x >= y else "false"
 		}
 	},
 	"<=": {
+		"int int": lambda x,y : {
+			"type": "bool",
+			"val": "true" if int(x) <= int(y) else "false"
+		},
+		"float float": lambda x,y : {
+			"type": "bool",
+			"val": "true" if float(x) <= float(y) else "false"
+		},
 		"* *": lambda x,y : {
 			"type": "bool",
 			"val": "true" if x <= y else "false"
 		}
 	},
 	">": {
+		"int int": lambda x,y : {
+			"type": "bool",
+			"val": "true" if int(x) > int(y) else "false"
+		},
+		"float float": lambda x,y : {
+			"type": "bool",
+			"val": "true" if float(x) > float(y) else "false"
+		},
 		"* *": lambda x,y : {
 			"type": "bool",
 			"val": "true" if x > y else "false"
 		}
 	},
 	"<": {
+		"int int": lambda x,y : {
+			"type": "bool",
+			"val": "true" if int(x) < int(y) else "false"
+		},
+		"float float": lambda x,y : {
+			"type": "bool",
+			"val": "true" if float(x) < float(y) else "false"
+		},
 		"* *": lambda x,y : {
 			"type": "bool",
 			"val": "true" if x < y else "false"

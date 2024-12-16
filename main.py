@@ -1,5 +1,6 @@
 
 import json
+from os import removexattr
 from jsonformatter import formatJson, cleanJson
 
 from errors import initError
@@ -423,6 +424,13 @@ def funcCall(name: str, params: list[list[dict[str, str]]]) :
 	if returns != None :
 		err(res, "UnusedReturn", f"Return value is unused", [name], False)
 
+falsy = {
+	"bool": "false",
+	"str": '""',
+	"int": "0",
+	"float": "0.0"
+}
+
 @addHandler
 def ifStatement(cond: list[dict[str, str]], body: list[dict], elif_body: list[dict], else_body: list[dict]) :
 	res = [
@@ -430,11 +438,36 @@ def ifStatement(cond: list[dict[str, str]], body: list[dict], elif_body: list[di
 	]
 	res.extend(cond)
 	res.append({"val": "{", "type": "parenteses"})
-	res.append({"val": "\n", "type": "newline"})
 
-	#print(res)
+	ret = evalExpr(cond)
 
-	#err(res, "c", "a", [])
+	if type(ret) is tuple :
+		err(res, ret[0], ret[1], [x["val"] for x in cond])
+		return
+	if not(type(ret) is dict) : return
+
+	if ret["val"] != falsy[ret["type"]] :
+		for i in body :
+			doSection(i)
+	else :
+		for e in elif_body :
+			ret = evalExpr(e["cond"])
+
+			print(e["cond"])
+			print(ret)
+
+			if type(ret) is tuple :
+				err(res, ret[0], ret[1], [x["val"] for x in cond])
+				return
+			if not(type(ret) is dict) : return
+
+			if ret["val"] != falsy[ret["type"]] :
+				for i in e["res"] :
+					doSection(i)
+				return
+
+		for i in else_body :
+			doSection(i)
 
 def doSection(sec) :
 	sec_type = sec["type"]

@@ -3,7 +3,7 @@ from tokenparser import parseTokens
 from termcolor import cprint
 
 def initError(string) :
-	text = {x: parseTokens(x) for x in string.split("\n")}
+	text = {x: parseTokens(x)[0] for x in string.split("\n")}
 	num_dict = {x: n for n, x in enumerate(string.split("\n"))}
 
 	def error(line: list[dict[str, str]] | int, errType: str, errMsg: str, under: list[str], err: bool = True) :
