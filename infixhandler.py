@@ -7,14 +7,16 @@ precedence = {
 	"+": 3,
 	"-": 3,
 	"><": 4,
-	"&": 6,
-	"|": 6,
-	"==": 5,
-	"!=": 5,
-	">=": 5,
-	"<=": 5,
-	"<": 5,
-	">": 5,
+	"&&": 5,
+	"||": 5,
+	"==": 6,
+	"!=": 6,
+	">=": 6,
+	"<=": 6,
+	"<": 6,
+	">": 6,
+	"&": 7,
+	"|": 7,
 }
 def infixToPostfix(tokens: list[dict[str, str]]) -> list[dict[str, str]] :
 	postfix = []
@@ -256,6 +258,24 @@ operands = {
 		"* *" : lambda x,y : {
 			"type": "str",
 			"val": '"' + (x[1:-1] if x[0] == '"' and x[-1] == '"' else x) + (y[1:-1] if y[0] == '"' and y[-1] == '"' else y) + '"'
+		}
+	},
+	"&&": {
+		"int int" : lambda x,y : {
+			"type": "int",
+			"val": str(int(x) & int(y))
+		}
+	},
+	"||": {
+		"int int" : lambda x,y : {
+			"type": "int",
+			"val": str(int(x) | int(y))
+		}
+	},
+	"^^": {
+		"int int" : lambda x,y : {
+			"type": "int",
+			"val": str(int(x) ^ int(y))
 		}
 	}
 }

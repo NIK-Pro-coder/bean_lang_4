@@ -2,15 +2,30 @@
 Bean Lang V4 is a silly little language that I've been writing for a few months.
 It's syntax is designed to look like a mix between Python, C++ and a bit of Rust.
 
+## Command line options :
+- `-t`, `--save-tokens` :
+	Saves the tokens that have been parsed from the file
+- `-r`, `--save-regex` :
+	Saves all the regex matches that have been found in the file
+- `-t`, `--save-tokens` :
+	Saves the tokensa that have been parsed from the file
+- `-s`, `--save-s` :
+	Saves the sections that have been parsed from the file
+- `-v`, `--save-vars` :
+	Every time a variable is created or changed adds an entry to this file, sort of like a timestamp
+
 ## Expression symbols :
 
-Bitwise operations are coming soon
-
 Most symbols in Bean Lang are the same as the ones in Python, a few exceptions are :
-- `a ^ b` : Raises a to the power of b
-- `a & b` : Logical and between a and b
-- `a | b` : Logical or between a and b
+- `a ^ b` : Raises a to the power of b (eg. `3 ^ 2` -> `9`)
+- `a & b` : Logical and between a and b (eg. `true & false` -> `false`)
+- `a | b` : Logical or between a and b (eg. `true | false` -> `true`)
 - `a >< b` : Joins a and b as string (eg. `10 >< " hi"` -> `"10 hi"`)
+- `a && b` : Bitwise and between a and b (eg. `3 && 2` -> `1`)
+- `a || b` : Bitwise or between a and b (eg. `3 || 2` -> `3`)
+- `a ^^ b` : Bitwise xor between a and b (eg. `3 ^ 2` -> `1`)
+
+The symbols for logical and and logical or are swapped with bitwise and and bitwise or because you'd normally use them more
 
 ## Syntax examples :
 
@@ -19,7 +34,7 @@ Most symbols in Bean Lang are the same as the ones in Python, a few exceptions a
 	short comment : # [comment]
 	long comment : /* [comment] */
 	```
-	Comments are an essential part of programming (I don't use them)
+	Comments are an essential part of programming (I don't use them much)
 	The short comment syntax is borrowed from Python, the long coment is borrowed from C++/Rust
 
 	### Examples :

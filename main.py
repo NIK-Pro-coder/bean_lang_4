@@ -1,6 +1,5 @@
 
 import json
-from os import removexattr
 from jsonformatter import formatJson, cleanJson
 
 from errors import initError
@@ -23,7 +22,7 @@ if "help" in flags :
 		" -r, --save-regex      Saves regex tokens in [filename]_regex.json",
 		" -t, --save-tokens     Saves parsed tokens in [filename]_tokens.json",
 		" -s, --save-sections   Saves parsed sections in [filename]_sections.json",
-		" -v, --save-variables  Saves variables in global scope in [filename]_variables.json",
+		" -v, --save-variables  Saves variables at every change in [filename]_variables.json",
 		" -h, --help            Shows this message",
 		sep = "\n"
 	)
