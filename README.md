@@ -2,8 +2,6 @@
 Bean Lang V4 is a silly little language that I've been writing for a few months.
 It's syntax is designed to look like a mix between Python, C++ and a bit of Rust.
 
----
-
 ## Expression symbols :
 
 Bitwise operations are coming soon
@@ -18,13 +16,12 @@ Most symbols in Bean Lang are the same as the ones in Python, a few exceptions a
 
 - Comment :
 	```
-		short comment : # [comment]
-		long comment : /* [comment] */
+	short comment : # [comment]
+	long comment : /* [comment] */
 	```
 	Comments are an essential part of programming (I don't use them)
 	The short comment syntax is borrowed from Python, the long coment is borrowed from C++/Rust
 
-	---
 	### Examples :
 	```
 	# This is a single-line comment
@@ -35,7 +32,6 @@ Most symbols in Bean Lang are the same as the ones in Python, a few exceptions a
 	int x = 10 <- this will not run
 	*/
 	```
-	---
 
 - Variable declaration :
 	```
@@ -44,7 +40,6 @@ Most symbols in Bean Lang are the same as the ones in Python, a few exceptions a
 
 	A variable is one of the building blocks of programming languages so I made sure that they are relatively simple
 
-	---
 	### Examples :
 	```
 	int x = 300
@@ -52,7 +47,6 @@ Most symbols in Bean Lang are the same as the ones in Python, a few exceptions a
 
 	float z = 50 / 3
 	```
-	---
 
 - If statement :
 	```
@@ -67,7 +61,6 @@ Most symbols in Bean Lang are the same as the ones in Python, a few exceptions a
 
 	If statements are quite important as they are the first step towards Turing-completeness, that said, I implemented them yesterday
 
-	---
 	### Examples :
 	```
 	if x > 100 {
@@ -90,7 +83,6 @@ Most symbols in Bean Lang are the same as the ones in Python, a few exceptions a
 		print("z is " >< z)
 	}
 	```
-	---
 
 - While loop :
 	```
@@ -101,7 +93,6 @@ Most symbols in Bean Lang are the same as the ones in Python, a few exceptions a
 
 	A while loop is the simples loop in programming, it simply repeats the code block while the condition is true
 
-	---
 	### Examples :
 	```
 	int x = 300
@@ -111,7 +102,6 @@ Most symbols in Bean Lang are the same as the ones in Python, a few exceptions a
 		x -= 1
 	}
 	```
-	---
 
 - Function definitions :
 	```
@@ -123,7 +113,6 @@ Most symbols in Bean Lang are the same as the ones in Python, a few exceptions a
 
 	Please note that redefining a function with different parameters will automaticaly create an overload
 
-	---
 	### Examples :
 	```
 	fn addten(int x) -> int {
@@ -136,7 +125,6 @@ Most symbols in Bean Lang are the same as the ones in Python, a few exceptions a
 	addten(10)  # will call the first function
 	addten(3.5) # will call the second function
 	```
-	---
 
 ## Builtin functions :
 - print
