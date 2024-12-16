@@ -1,0 +1,22 @@
+version = 1
+
+[lang]
+name = "python"
+extension = "py"
+
+[sections]
+varDeclare = "$name : $type = $[ $x.val for x in $val $]"
+funcCall = "$name ( $[ $[ $x.val for x in $i $] for i in $params $] )"
+
+[conversions]
+"&&" = "&"
+"||" = "|"
+"^^" = "^"
+"&" = "and"
+"|" = "or"
+"^" = "**"
+"><" = "+"
+
+[builtins]
+print = "print"
+input = "input"

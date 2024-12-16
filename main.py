@@ -11,7 +11,8 @@ arguments, flags = parseAgrs({
 	"s": "save-sections",
 	"v": "save-vars",
 	"r": "save-regex",
-	"h": "help"
+	"h": "help",
+	"c": "compile"
 })
 
 if "help" in flags :
@@ -32,7 +33,19 @@ filename = arguments[1]
 
 with open(filename) as f :
 	text = f.read()
-	err = initError(text)
+	err_dumb = initError(text)
+
+errors = 0
+warnings = 0
+def err(line: list[dict[str, str]] | int, errType: str, errMsg: str, under: list[str], error: bool = True) :
+	global errors, warnings
+
+	if error :
+		errors += 1
+	else :
+		warnings += 1
+
+	err_dumb(line, errType, errMsg, under, error)
 
 from sectionparser import parseSections
 from tokenparser import parseTokens
@@ -80,13 +93,19 @@ def baseInput(x) :
 		"type": "str"
 	}
 
+builtins = {
+	"print": basePrint,
+	"input": baseInput,
+}
+
 scopes = [
 	{
-		"print": basePrint,
-		"input": baseInput,
 		"STDOUT": {"val": '""', "type": "str", "const": True}
 	}
 ]
+for i in builtins :
+	scopes[-1][i] = builtins[i]
+
 from copy import deepcopy
 
 all_scopes = [
@@ -556,3 +575,94 @@ for sec in sections :
 if "save-vars" in flags :
 	with open(filename[:filename.rfind(".")] + "_variables.json", "w") as f :
 		f.write(json.dumps(cleanJson(all_scopes)))
+
+print(f"Program generated {warnings} warnings and {errors} errors")
+
+import tomli
+import os
+
+def getVal(val, f) :
+	s = f
+	for i in val[1:].split(".") :
+		s = s[i]
+
+	return s
+
+def extract(f) :
+	deep = []
+	depth = 0
+	curr = []
+	for i in f :
+		if i == "$]" : depth -= 1
+
+		if depth > 0 : curr.append(i)
+		elif i != "$]" : curr = [i]
+		else : curr.append(i)
+
+		if i == "$[" : depth += 1
+
+		if depth == 0 :
+			if len(curr) > 1 :
+				deep.append(extract(curr[1:-1]))
+			else :
+				deep.append(curr[0])
+			curr = []
+
+	return deep
+
+def replace(deep, field) :
+	new = []
+	for i in deep :
+		if type(i) is str :
+			if i[0] == "$" :
+				new.append(getVal(i, field))
+			else :
+				new.append(i)
+		else :
+			name = i[-3]
+			base = getVal(i[-1], field)
+			for b in base :
+				for f in i[:-4] :
+					if type(f) is list :
+						new.extend(replace([f], {name: b}))
+					else :
+						if f[0] == "$" :
+							new.append(getVal(f, {name: b}))
+						else :
+							new.append(f)
+	return new
+
+if "compile" in flags :
+	if flags["compile"] == "" :
+		print("Please specify a language to compile to")
+		exit(1)
+
+	print("Loading language templates")
+	langs = [x for x in os.listdir("templates") if os.path.isfile("templates/" + x)]
+
+	template = {}
+	for i in langs :
+		with open("templates/" + i, "rb") as f :
+			mine = tomli.load(f)
+		if flags["compile"] == mine["lang"]["name"] or flags["compile"] == mine["lang"]["extension"] :
+			template = deepcopy(mine)
+
+	if not template :
+		print(f"Could not load template for language: {flags["compile"]}")
+		exit(1)
+
+	print(f"Loaded {template["lang"]["name"]} template (version {template["version"]})")
+
+	secs = template["sections"]
+	conv = template["conversions"]
+
+	for s in sections :
+		tem: list[str] = secs[s["type"]].split(" ")
+		deep = extract(tem)
+		new = replace(deep, s["fields"])
+
+		for n,i in enumerate(new) :
+			if i in conv :
+				new[n] = conv[i]
+
+		print(new)

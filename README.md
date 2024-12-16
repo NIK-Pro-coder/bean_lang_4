@@ -12,7 +12,7 @@ Please note that the error messages aren't really accurate, as they don't actual
 	Saves all the regex matches that have been found in the file
 - `-t`, `--save-tokens` :
 	Saves the tokensa that have been parsed from the file
-- `-s`, `--save-s` :
+- `-s`, `--save-sections` :
 	Saves the sections that have been parsed from the file
 - `-v`, `--save-vars` :
 	Every time a variable is created or changed adds an entry to this file, sort of like a timestamp
