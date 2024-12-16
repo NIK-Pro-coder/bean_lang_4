@@ -1,6 +1,9 @@
 # Bean Lang V4
 Bean Lang V4 is a silly little language that I've been writing for a few months.
+
 It's syntax is designed to look like a mix between Python, C++ and a bit of Rust.
+
+Please note that the error messages aren't really accurate, as they don't actually know what line the error occured in but try to guess it
 
 ## Command line options :
 - `-t`, `--save-tokens` :
