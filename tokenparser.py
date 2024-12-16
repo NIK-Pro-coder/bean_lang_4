@@ -44,14 +44,14 @@ token_types = {
 	"newline": ["\n", ";"]
 }
 
-
-def parseTokens(text: str) -> list[dict[str, str]] :
+def parseTokens(text: str, debug: bool = False) -> tuple[list[dict[str, str]], dict] :
 	text = text.replace("\t", " ")
+
+	regex = {}
 
 	tokens = []
 	for type in token_types :
 		for tkn in token_types[type] :
-			print(type, list(re.finditer(tkn, text)))
 			for i in re.finditer(tkn, text) :
 				add = True
 				span_i = i.span()
@@ -62,6 +62,14 @@ def parseTokens(text: str) -> list[dict[str, str]] :
 						add = False
 						break
 				if add :
+					if not type in regex :
+						regex[type] = []
+
+					regex[type].append({
+						"span": i.span(),
+						"match": i.group().strip() if type != "newline" else i.group(),
+					})
+
 					tokens.append({
 						"val": i,
 						"type": type
@@ -76,6 +84,5 @@ def parseTokens(text: str) -> list[dict[str, str]] :
 		}
 		for x in tokens
 	]
-	print(tokens)
 
-	return tokens
+	return tokens, regex

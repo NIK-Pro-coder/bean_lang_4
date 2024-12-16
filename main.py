@@ -9,8 +9,24 @@ from argsparser import parseAgrs
 arguments, flags = parseAgrs({
 	"t": "save-tokens",
 	"s": "save-sections",
-	"v": "save-vars"
+	"v": "save-vars",
+	"r": "save-regex",
+	"h": "help"
 })
+
+if "help" in flags :
+	print(
+		"beanlang [file] [OPTIONS]",
+		"",
+		"OPTIONS :",
+		" -r, --save-regex      Saves regex tokens in [filename]_regex.json",
+		" -t, --save-tokens     Saves parsed tokens in [filename]_tokens.json",
+		" -s, --save-sections   Saves parsed sections in [filename]_sections.json",
+		" -v, --save-variables  Saves variables in global scope in [filename]_variables.json",
+		" -h, --help            Shows this message",
+		sep = "\n"
+	)
+	exit()
 
 filename = arguments[1]
 
@@ -21,7 +37,11 @@ with open(filename) as f :
 from sectionparser import parseSections
 from tokenparser import parseTokens
 
-tokens = parseTokens(text)
+tokens, regex = parseTokens(text, "save-regex" in flags)
+
+if "save-regex" in flags :
+	with open(filename[:filename.rfind(".")] + "_regex.json", "w") as f :
+		f.write(json.dumps(regex))
 
 if "save-tokens" in flags :
 	with open(filename[:filename.rfind(".")] + "_tokens.json", "w") as f :
@@ -412,7 +432,9 @@ def ifStatement(cond: list[dict[str, str]], body: list[dict], elif_body: list[di
 	res.append({"val": "{", "type": "parenteses"})
 	res.append({"val": "\n", "type": "newline"})
 
-	err(res, "c", "a", [])
+	#print(res)
+
+	#err(res, "c", "a", [])
 
 def doSection(sec) :
 	sec_type = sec["type"]
