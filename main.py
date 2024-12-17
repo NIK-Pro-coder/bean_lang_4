@@ -1,4 +1,6 @@
 
+from termcolor import cprint
+
 import json
 from jsonformatter import formatJson, cleanJson
 
@@ -230,7 +232,8 @@ def varDeclare(var_type: str, name: str, val: list[dict[str, str]]) :
 @addHandler
 def constDeclare(var_type: str, name: str, val: list[dict[str, str]]) :
 	res = [
-		{"val": var_type, "type": "type"},
+		{"val": var_type, "type": "identifier"},
+		{"val": "const", "type": "keyword"},
 		{"val": name, "type": "identifier"},
 	]
 	if val :
@@ -243,10 +246,8 @@ def constDeclare(var_type: str, name: str, val: list[dict[str, str]]) :
 	if name.startswith("_") :
 		err(res, "BadName", f"Having a variable name start with an underscore is bad practice, use \"{name.lstrip("_")}\" instead", [name], False)
 
-	if name.lower() != name :
-		snake = "".join([("_" if x != x.lower() else "") + x.lower() for x in name]).replace("__", "_")
-
-		err(res, "NotSnakeCase", f"Variable name \"{name}\" is not snake case, use \"{snake}\"", [name], False)
+	if name.upper() != name :
+		err(res, "NotSnakeCase", f"Variable name \"{name}\" is not uppercase, use \"{name.upper()}\"", [name], False)
 
 	if name in scopes[-1] :
 		err(res, "VariableRedeclare", f"Cannot redeclare var \"{name}\"", [name])
@@ -470,8 +471,10 @@ def funcCall(name: str, params: list[list[dict[str, str]]]) :
 		{"val": name, "type": "identifier"},
 		{"val": "(", "type": "parenteses"}
 	]
-	for i in params :
+	for n,i in enumerate(params) :
 		res.extend(i)
+		if n != len(params) - 1 :
+			res.append({"val": ",", "type": "argSplit"})
 	res.append({"val": ")", "type": "parenteses"})
 
 	returns = callFunc(name, params)
@@ -576,14 +579,14 @@ if "save-vars" in flags :
 	with open(filename[:filename.rfind(".")] + "_variables.json", "w") as f :
 		f.write(json.dumps(cleanJson(all_scopes)))
 
-print(f"Program generated {warnings} warnings and {errors} errors")
+print(f"\nProgram generated {warnings} warning(s) and {errors} error(s)")
 
 import tomli
 import os
 
 def getVal(val, f) :
-	s = f
-	for i in val[1:].split(".") :
+	s = deepcopy(f)
+	for i in val.strip("$").split(".") :
 		s = s[i]
 
 	return s
@@ -608,31 +611,64 @@ def extract(f) :
 				deep.append(curr[0])
 			curr = []
 
-	return deep
+	return [x for x in deep if x]
 
-def replace(deep, field) :
+def replace(deep, field, depth) :
 	new = []
 	for i in deep :
 		if type(i) is str :
-			if i[0] == "$" :
-				new.append(getVal(i, field))
+			if i.startswith("$") :
+				if i[1] == "!" :
+					secs = getVal(i[2:], field)
+					for s in secs :
+						new.append("\n" + "\t" * (depth + 1) + translateSection(s, depth + 1))
+				else :
+					new.append(getVal(i, field))
 			else :
 				new.append(i)
 		else :
-			name = i[-3]
-			base = getVal(i[-1], field)
-			for b in base :
-				for f in i[:-4] :
-					if type(f) is list :
-						new.extend(replace([f], {name: b}))
-					else :
-						if f[0] == "$" :
-							new.append(getVal(f, {name: b}))
-						else :
-							new.append(f)
+			add = i[i.index("split")+1:] if "split" in i else []
+			val = i[:i.index("for")]
+			base = getVal(i[i.index("in") + 1], field)
+			name = i[i.index("for") + 1]
+
+			for n,b in enumerate(base) :
+				new.extend(replace(val, {name: b}, depth))
+				if n < len(base) - 1 and add :
+					new.extend(add)
+
 	return new
 
+def translateSection(s, depth = 0) :
+	if not s["type"] in secs :
+		cprint(f"Translation string for section type \"{s["type"]}\" is not defined!", "red")
+		exit(1)
+
+	tem: list[str] = secs[s["type"]].replace("\\", " \\ ").replace("\n", " \n \\ ").split(" ")
+	deep = extract(tem)
+	new = replace(deep, s["fields"], depth)
+
+	print(new)
+
+	for n,i in enumerate(new) :
+		if i in conv :
+			new[n] = conv[i]
+
+	string = ""
+
+	for i in new :
+		if i == "\\" :
+			string = string[:-1]
+		else :
+			string += i + " "
+
+	return string
+
 if "compile" in flags :
+	if errors > 0 :
+		cprint("Could not compile due to previous error(s)", "red")
+		exit(1)
+
 	if flags["compile"] == "" :
 		print("Please specify a language to compile to")
 		exit(1)
@@ -648,21 +684,29 @@ if "compile" in flags :
 			template = deepcopy(mine)
 
 	if not template :
-		print(f"Could not load template for language: {flags["compile"]}")
+		cprint(f"Could not load template for language: {flags["compile"]}", "red")
 		exit(1)
 
-	print(f"Loaded {template["lang"]["name"]} template (version {template["version"]})")
+	cprint(f"Loaded {template["lang"]["name"]} template (version {template["meta"]["version"]}) by {template["meta"]["author"]}", "green")
 
 	secs = template["sections"]
 	conv = template["conversions"]
 
+	last_type = ""
+
+	full = " " + secs["headers"] if "headers" in secs else ""
+
 	for s in sections :
-		tem: list[str] = secs[s["type"]].split(" ")
-		deep = extract(tem)
-		new = replace(deep, s["fields"])
+		string = translateSection(s)
 
-		for n,i in enumerate(new) :
-			if i in conv :
-				new[n] = conv[i]
+		if s["type"] != last_type :
+			last_type = s["type"]
+			full += "\n"
 
-		print(new)
+		full += "\n" + string.rstrip("\t ")
+
+	newname = filename[:filename.rfind(".")+1] + template["lang"]["extension"]
+
+	with open(newname, "w") as f :
+		f.write(full[1:])
+	cprint("File successfully translated", "green")

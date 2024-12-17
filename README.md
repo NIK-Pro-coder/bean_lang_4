@@ -16,6 +16,8 @@ Please note that the error messages aren't really accurate, as they don't actual
 	Saves the sections that have been parsed from the file
 - `-v`, `--save-vars` :
 	Every time a variable is created or changed adds an entry to this file, sort of like a timestamp
+- `-c`, `--compile` `[lang]` :
+	Translates the file into the specified language, use language templates for this (more on them in the future)
 
 ## Expression symbols :
 

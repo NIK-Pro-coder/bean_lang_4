@@ -76,12 +76,12 @@ def parseSections(tokens: list[dict[str, str]], err: Callable | None = None) -> 
 		if tkn_type == "type" :
 			ntk = getNext()
 			const = False
-			if ntk["type"] == "identifier" :
-				name = ntk
-			elif ntk["val"] == "const" :
+			if ntk["val"] == "const" :
 				const = True
 				name = expect("identifier")
 				if not name : exit(1)
+			elif ntk["type"] == "identifier" :
+				name = ntk
 			else :
 				if err :
 					err(line, "UnexpectedToken", f"Expected identifier or \"const\", instead found \"{ntk["val"]}\"", [ntk["val"]])

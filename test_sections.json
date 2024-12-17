@@ -1,1 +1,48 @@
-[{"type": "varDeclare", "fields": {"type": "int", "name": "x", "val": [{"val": "3", "type": "int"}]}}, {"type": "varDeclare", "fields": {"type": "int", "name": "y", "val": [{"val": "2", "type": "int"}]}}, {"type": "funcCall", "fields": {"name": "print", "params": [[{"val": "x", "type": "identifier"}, {"val": "^", "type": "numOp"}, {"val": "y", "type": "identifier"}]]}}]
+[
+	{
+		"type": "varDeclare",
+		"fields": {
+			"type": "int",
+			"name": "x",
+			"val": [{ "val": "100", "type": "int" }]
+		}
+	},
+	{
+		"type": "ifStatement",
+		"fields": {
+			"cond": [
+				{ "val": "x", "type": "identifier" },
+				{ "val": ">", "type": "logicOp" },
+				{ "val": "10", "type": "int" }
+			],
+			"res": [
+				{
+					"type": "funcCall",
+					"fields": {
+						"name": "print",
+						"params": [[{ "val": "x", "type": "identifier" }]]
+					}
+				}
+			],
+			"elif": [
+				{
+					"cond": [
+						{ "val": "x", "type": "identifier" },
+						{ "val": ">", "type": "logicOp" },
+						{ "val": "5", "type": "int" }
+					],
+					"res": [
+						{
+							"type": "funcCall",
+							"fields": {
+								"name": "print",
+								"params": [[{ "val": "5", "type": "int" }]]
+							}
+						}
+					]
+				}
+			],
+			"else": []
+		}
+	}
+]

@@ -1,12 +1,31 @@
+[meta]
 version = 1
+author = "TeamBean"
 
 [lang]
 name = "python"
 extension = "py"
 
 [sections]
-varDeclare = "$name : $type = $[ $x.val for x in $val $]"
-funcCall = "$name ( $[ $[ $x.val for x in $i $] for i in $params $] )"
+headers = """
+STDOUT: str = ""
+
+def print_builtin(x) -> None :
+	print(x)
+	STDOUT = str(x) + "\\n"
+
+def input_builtin(msg: str) -> str :
+	return input(msg)"""
+
+varDeclare = "$name\\: $type = $[ $x.val for x in $val $]"
+funcCall = "$name\\(\\$[ $[ $x.val for x in $i $] for i in $params split \\, $]\\)"
+funcDefine = "def $name\\(\\$[ $x.val\\: $x.type for x in $params split \\, $]\\) -> $return :\\$!res"
+returnStatement = "return $[ $[ $x.val for x in $i $] for i in $params split \\, $]"
+constDeclare = "$name\\: $type = $[ $x.val for x in $val $]"
+varUpdate = "$name $act $[ $x.val for x in $val $]"
+whileLoop = "while $[ $x.val for x in $cond $]\\:\\$!res"
+ifStatement = """if $[ $x.val for x in $cond $]\\:\\$!res\\
+$[ elif $[ $e.val for e in $x.cond $]\\:\\$!x.res\\ for x in $elif split \n $]"""
 
 [conversions]
 "&&" = "&"
@@ -15,8 +34,5 @@ funcCall = "$name ( $[ $[ $x.val for x in $i $] for i in $params $] )"
 "&" = "and"
 "|" = "or"
 "^" = "**"
-"><" = "+"
-
-[builtins]
-print = "print"
-input = "input"
+"print" = "print_builtin"
+"input" = "input_builtin"

@@ -26,16 +26,16 @@ def initError(string) :
 
 		underline = ""
 		for i in vals :
-			bef = "-" * (len(strp) - len(strp.lstrip()))
+			bef = "~" * (len(strp) - len(strp.lstrip()))
 			strp = strp.strip()
 
-			add = ("^" if i in under else "-") * len(i)
+			add = ("^" if i in under else "~") * len(i)
 			strp = strp.removeprefix(i)
 
 			underline += bef + add
 
 		for i in underline :
-			underline = underline.replace("^-^", "^^^")
+			underline = underline.replace("^~^", "^^^")
 
 		mycol = "red" if err else "yellow"
 

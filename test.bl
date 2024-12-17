@@ -1,6 +1,10 @@
 
-int x = 3
+int x = 100
 
-int y = 2
-
-print(x ^ y)
+if x > 10 {
+	print(x)
+} elif x > 5 {
+	print(5)
+} elif x > 5 {
+	print(5)
+}
