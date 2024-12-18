@@ -15,3 +15,5 @@ elif x > 5:
 	print_builtin(5) 
 elif x > 5:
 	print_builtin(5)
+else :
+	print_builtin(1)

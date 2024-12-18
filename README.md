@@ -1,5 +1,5 @@
-# Bean Lang V4
-Bean Lang V4 is a silly little language that I've been writing for a few months.
+# Bean Lang v0.5.0
+Bean Lang v0.5.0 is a silly little language that I've been writing for a few months.
 
 It's syntax is designed to look like a mix between Python, C++ and a bit of Rust.
 
