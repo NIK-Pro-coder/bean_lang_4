@@ -87,15 +87,17 @@ def translateSection(s, depth = 0) :
 		if i in conv :
 			new[n] = conv[i]
 
-	string = ""
+	stg = []
 
 	for i in new :
 		if i == "\\" :
-			string = string[:-1]
+			if stg[-1] == " " :
+				stg.pop(-1)
 		else :
-			string += i + " "
+			stg.append(i.strip(" "))
+			stg.append(" ")
 
-	return string
+	return "".join(stg).replace(" \n", "\n")
 
 def getNum(min: int, max: int, msg: str) -> int :
 	ini = input(msg)
@@ -124,6 +126,32 @@ def translate(filename: str, sections: list[dict], lang: str) :
 	for i in langs :
 		with open(templates / i) as f :
 			mine = tomli.loads(f.read())
+			match mine["meta"] :
+				case {
+					"version": str(),
+					"author": str(),
+					"description": str()
+				} :
+					...
+				case _ :
+					cprint(f"'{i}' has a malformed meta header, you might want to check that", "red")
+					cprint("  Expected: version, author, description", "red")
+					cprint("  Found:    " + ", ".join(mine["meta"].keys()), "red")
+					continue
+
+			match mine["lang"] :
+				case {
+					"name": str(),
+					"extension": str(),
+					"indentation": str()
+				} :
+					...
+				case _ :
+					cprint(f"'{i}' has a malformed lang header, you might want to check that", "red")
+					cprint("  Expected: name, extension, indentation", "red")
+					cprint("  Found:    " + ", ".join(mine["lang"].keys()), "red")
+					continue
+
 		if lang == mine["lang"]["name"] or lang == mine["lang"]["extension"] :
 			possible.append((deepcopy(mine), i))
 
@@ -152,7 +180,7 @@ def translate(filename: str, sections: list[dict], lang: str) :
 	cprint(f"Loaded template '{fname}' (version {template["meta"]["version"]}) by {template["meta"]["author"]}", "green")
 
 	secs = template["sections"]
-	conv = template["conversions"]
+	conv = template["conversions"] if "conversions" in template else []
 	inde = template["lang"]["indentation"]
 
 	last_type = ""

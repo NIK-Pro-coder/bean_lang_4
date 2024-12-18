@@ -40,9 +40,33 @@
 							}
 						}
 					]
+				},
+				{
+					"cond": [
+						{ "val": "x", "type": "identifier" },
+						{ "val": ">", "type": "logicOp" },
+						{ "val": "5", "type": "int" }
+					],
+					"res": [
+						{
+							"type": "funcCall",
+							"fields": {
+								"name": "print",
+								"params": [[{ "val": "5", "type": "int" }]]
+							}
+						}
+					]
 				}
 			],
-			"else": []
+			"else": [
+				{
+					"type": "funcCall",
+					"fields": {
+						"name": "print",
+						"params": [[{ "val": "1", "type": "int" }]]
+					}
+				}
+			]
 		}
 	}
 ]

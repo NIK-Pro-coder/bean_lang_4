@@ -10,3 +10,5 @@ if x > 10 {
 } else {
 	print(1)
 }
+
+int const Y = 50
