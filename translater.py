@@ -126,31 +126,29 @@ def translate(filename: str, sections: list[dict], lang: str) :
 	for i in langs :
 		with open(templates / i) as f :
 			mine = tomli.loads(f.read())
-			match mine["meta"] :
-				case {
-					"version": str(),
-					"author": str(),
-					"description": str()
-				} :
-					...
-				case _ :
-					cprint(f"'{i}' has a malformed meta header, you might want to check that", "red")
-					cprint("  Expected: version, author, description", "red")
-					cprint("  Found:    " + ", ".join(mine["meta"].keys()), "red")
-					continue
+			expect = ["version", "author", "desc"]
 
-			match mine["lang"] :
-				case {
-					"name": str(),
-					"extension": str(),
-					"indentation": str()
-				} :
-					...
-				case _ :
-					cprint(f"'{i}' has a malformed lang header, you might want to check that", "red")
-					cprint("  Expected: name, extension, indentation", "red")
-					cprint("  Found:    " + ", ".join(mine["lang"].keys()), "red")
-					continue
+			if list(mine["meta"].keys()) != expect :
+				cprint(f"'{i}' has a malformed meta header, you might want to check that", "red")
+				cprint("  Expected: " + ", ".join(expect), "red")
+				cprint("  Found:    " + ", ".join(mine["meta"].keys()), "red")
+				if len(expect) > len(mine["meta"].keys()) :
+					cprint("  Missing:  " + ", ".join(list(set(expect) - set(mine["meta"].keys()))), "red")
+				else :
+					cprint("  Extra:    " + ", ".join(list(set(mine["meta"].keys()) - set(expect))), "red")
+				continue
+
+			expect = ["name", "extension", "indentation", "comment"]
+
+			if list(mine["lang"].keys()) != expect :
+				cprint(f"'{i}' has a malformed lang header, you might want to check that", "red")
+				cprint("  Expected: " + ", ".join(expect), "red")
+				cprint("  Found:    " + ", ".join(mine["lang"].keys()), "red")
+				if len(expect) > len(mine["lang"].keys()) :
+					cprint("  Missing:  " + ", ".join(list(set(expect) - set(mine["lang"].keys()))), "red")
+				else :
+					cprint("  Extra:    " + ", ".join(list(set(mine["lang"].keys()) - set(expect))), "red")
+				continue
 
 		if lang == mine["lang"]["name"] or lang == mine["lang"]["extension"] :
 			possible.append((deepcopy(mine), i))
@@ -182,10 +180,11 @@ def translate(filename: str, sections: list[dict], lang: str) :
 	secs = template["sections"]
 	conv = template["conversions"] if "conversions" in template else []
 	inde = template["lang"]["indentation"]
+	comm = template["lang"]["comment"]
 
 	last_type = ""
 
-	full = " " + secs["headers"] if "headers" in secs else ""
+	full = " " + comm + " START OF HEADER\n" + secs["headers"] + "\n" + comm + " END OF HEADER" if "headers" in secs else ""
 
 	for s in sections :
 		string = translateSection(s)
@@ -200,4 +199,4 @@ def translate(filename: str, sections: list[dict], lang: str) :
 
 	with open(newname, "w") as f :
 		f.write(full[1:])
-	cprint("File successfully translated", "green")
+	cprint(f"File successfully translated, see '{newname}'", "green")

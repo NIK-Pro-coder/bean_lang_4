@@ -1,14 +1,33 @@
+/*
+	This file contains all the sections to test
+	the various translation templates
+*/
 
-int x = 100
+# constDeclare
+int const CONSTANT_VAR = 100
 
-if x > 10 {
-	print(x)
-} elif x > 5 {
-	print(5)
-} elif x > 5 {
-	print(5)
-} else {
+# varDeclare
+int mutable_var = 10
+
+# ifStatement
+if CONSTANT_VAR > 10 {
 	print(1)
+} elif CONSTANT_VAR > 5 {
+	print(2)
+} else {
+	print(3)
+}
+# funcDefine
+fn addnums(int x, int y) -> int {
+	# returnStatement
+	return x + y
 }
 
-int const Y = 50
+# varUpdate + funcCall
+mutable_var += addnums(10, 5)
+
+# whileLoop
+while mutable_var > 0 {
+	print(mutable_var)
+	mutable_var -= 1
+}
