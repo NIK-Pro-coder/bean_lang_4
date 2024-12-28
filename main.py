@@ -96,7 +96,7 @@ def baseInput(x) :
 	}
 
 builtins = {
-	"print": basePrint,
+	"println": basePrint,
 	"input": baseInput,
 }
 
@@ -177,7 +177,7 @@ def evalExpr(expr: list[dict[str, str]]) -> dict[str, str] | tuple[str, str] :
 @addHandler
 def varDeclare(var_type: str, name: str, val: list[dict[str, str]]) :
 	res = [
-		{"val": var_type, "type": "type"},
+		{"val": var_type, "type": "identifier"},
 		{"val": name, "type": "identifier"},
 	]
 	if val :
@@ -560,7 +560,27 @@ def whileLoop(cond: list[dict[str, str]], body: list[dict]) :
 			return
 		if not(type(ret) is dict) : return
 
+@addHandler
+def structDefine(name: str, params: list[list[dict[str, str]]]) :
+	res = [
+		{"val": "struct", "type": "identifier"},
+		{"val": name, "type": "identifier"},
+		{"val": "{", "type": "parenteses"}
+	]
+
+	if name in scopes[-1] :
+		err(res, "VariableRedeclare", f"Cannot redeclare var \"{name}\"", [name])
+		return
+
+	scopes[-1][name] = {
+		"type": "struct",
+		"val": "struct",
+		"params": params
+	}
+
 def doSection(sec) :
+	global errors
+
 	sec_type = sec["type"]
 	sec_fields = sec["fields"]
 
@@ -569,8 +589,8 @@ def doSection(sec) :
 			*sec_fields.values()
 		)
 
-	print(f"A section handler for sections of type \"{sec_type}\", has not been implemented yet :(")
-	exit(1)
+	cprint(f"A section handler for sections of type \"{sec_type}\", has not been implemented", "red")
+	errors += 1
 
 for sec in sections :
 	doSection(sec)

@@ -1,6 +1,8 @@
 /*
 	This file contains all the sections to test
-	the various translation templates
+	the various translation templates, please note
+	that comment are ignored in token parsing and,
+	as such, they are not translated
 */
 
 # constDeclare
@@ -11,11 +13,11 @@ int mutable_var = 10
 
 # ifStatement
 if CONSTANT_VAR > 10 {
-	print(1)
+	println(1)
 } elif CONSTANT_VAR > 5 {
-	print(2)
+	println(2)
 } else {
-	print(3)
+	println(3)
 }
 # funcDefine
 fn addnums(int x, int y) -> int {
@@ -24,10 +26,35 @@ fn addnums(int x, int y) -> int {
 }
 
 # varUpdate + funcCall
-mutable_var += addnums(10, 5)
+mutable_var += addnums((10 + 5)/3 * 2, 5)
 
 # whileLoop
 while mutable_var > 0 {
-	print(mutable_var)
+	println(mutable_var)
 	mutable_var -= 1
 }
+
+# Testing special symbols
+
+# Binary Ops
+mutable_var = 1 && 3
+mutable_var = 1 || 3
+mutable_var = 1 ^^ 3
+
+# Number Ops
+mutable_var = 2 ^ 3
+
+# String Ops
+str test_str = "hello" >< " " >< "world"
+
+# Bool Ops
+bool test_bool = true | false
+test_bool = true | false
+
+# Structures
+struct Point {
+	float x,
+	float y
+}
+
+Point p = 10, 10

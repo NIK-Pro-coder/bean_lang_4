@@ -4,7 +4,8 @@ from typing import Callable
 
 precedence = {
 	"constDeclare": 0,
-	"funcDefine": 1
+	"structDefine": 1,
+	"funcDefine": 2
 }
 
 line = 0
@@ -38,7 +39,7 @@ def parseSections(tokens: list[dict[str, str]], err: Callable | None = None) -> 
 
 		if err :
 			add = "\"" if token_type.startswith("!") else ""
-			err(line, "UnexpectedToken", f"Expected {add}{token_type.removeprefix("!")}{add}, instead found {tkn["val"]}", [tkn["val"]])
+			err(line, "UnexpectedToken", f"Expected {add}{token_type.removeprefix("!")}{add}, instead found {repr(tkn["val"])}", [tkn["val"]])
 
 	def until(token_type: str) -> list[dict[str, str]] | None :
 		tkns = []
@@ -73,7 +74,38 @@ def parseSections(tokens: list[dict[str, str]], err: Callable | None = None) -> 
 		tkn_type = tkn["type"]
 		tkn_val = tkn["val"]
 
-		if tkn_type == "type" :
+		if tkn_val == "struct" :
+			name = expect("identifier")
+			if not name : exit(1)
+			expect("!{")
+			depth = 1
+			params = [[]]
+			want = "type"
+			while depth > 0 :
+				ntk = getNext()
+				if ntk["val"] == "}" : depth -= 1
+				if ntk["val"] == "{" : depth += 1
+				if depth > 0 and ntk["type"] != "newline" :
+					if ntk["type"] != want and err :
+						err(line, "UnexpectedToken", f"Expected {want}, instead found {repr(ntk["val"])}", [ntk["val"]])
+					else :
+						if ntk["val"] == "," :
+							params.append([])
+						else :
+							params[-1].append(ntk)
+					want = {
+						"type": "identifier",
+						"identifier": "argSplit",
+						"argSplit": "type"
+					}[want]
+			sections.append({
+				"type": "structDefine",
+				"fields": {
+					"name": name["val"],
+					"params": params
+				}
+			})
+		elif tkn_type == "type" :
 			ntk = getNext()
 			const = False
 			if ntk["val"] == "const" :
@@ -167,6 +199,24 @@ def parseSections(tokens: list[dict[str, str]], err: Callable | None = None) -> 
 					"type": "funcCall",
 					"fields": {
 						"name": tkn["val"],
+						"params": params,
+					}
+				})
+			elif ntk["type"] == "identifier" :
+				if not expect("!="): exit(1)
+				params = [[]]
+				vals = until("newline")
+				if not vals: exit(1)
+				for i in vals :
+					if i["val"] == "," :
+						params.append([])
+					else :
+						params[-1].append(i)
+				sections.append({
+					"type": "structDeclare",
+					"fields": {
+						"name": ntk["val"],
+						"type": tkn["val"],
 						"params": params,
 					}
 				})

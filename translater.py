@@ -4,6 +4,8 @@ from copy import deepcopy
 from termcolor import cprint
 from pathlib import Path
 
+import infixhandler
+
 home = Path.home()
 
 templates = home / ".config/beanlang/templates"
@@ -74,10 +76,18 @@ def replace(deep, field, depth) :
 
 	return new
 
+from infixhandler import infixToPostfix
+
+def convertExpr(expr: list[dict[str, str]]) :
+	print(infixToPostfix(expr))
+
 def translateSection(s, depth = 0) :
 	if not s["type"] in secs :
 		cprint(f"Translation string for section type \"{s["type"]}\" is not defined!", "red")
 		exit(1)
+
+	if s["type"] == "varUpdate" :
+		convertExpr(s["fields"]["val"])
 
 	tem: list[str] = secs[s["type"]].replace("\\", " \\ ").replace("\n", " \n \\ ").split(" ")
 	deep = extract(tem)
@@ -178,9 +188,11 @@ def translate(filename: str, sections: list[dict], lang: str) :
 	cprint(f"Loaded template '{fname}' (version {template["meta"]["version"]}) by {template["meta"]["author"]}", "green")
 
 	secs = template["sections"]
-	conv = template["conversions"] if "conversions" in template else []
 	inde = template["lang"]["indentation"]
 	comm = template["lang"]["comment"]
+
+	operators = template["operators"] if "operators" in template else []
+	conv = template["conversions"] if "conversions" in template else []
 
 	last_type = ""
 

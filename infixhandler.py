@@ -1,5 +1,5 @@
 
-precedence = {
+PRECEDENCE = {
 	"^": 0,
 	"%": 1,
 	"*": 2,
@@ -35,10 +35,10 @@ def infixToPostfix(tokens: list[dict[str, str]]) -> list[dict[str, str]] :
 				stack.append(i)
 			elif stack[-1]["val"] == "(" :
 				stack.append(i)
-			elif precedence[i["val"]] < precedence[stack[-1]["val"]] :
+			elif PRECEDENCE[i["val"]] < PRECEDENCE[stack[-1]["val"]] :
 				stack.append(i)
 			else :
-				while precedence[i["val"]] >= precedence[stack[-1]["val"]] :
+				while PRECEDENCE[i["val"]] >= PRECEDENCE[stack[-1]["val"]] :
 					postfix.append(stack.pop(-1))
 					if len(stack) == 0 : break
 				stack.append(i)

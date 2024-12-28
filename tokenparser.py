@@ -8,9 +8,18 @@ token_types = {
 	"range": ["\\.\\."],
 
 	"str": ["\"[^\"]*\""],
-	"float": [" -[0-9]*\\.[0-9]+", "[0-9]*\\.[0-9]+"],
-	"int": [" -[0-9]+", "[0-9]+"],
-	"bool": ["true", "false"],
+	"float": [
+		" -[0-9]*\\.[0-9]+",
+		"[0-9]*\\.[0-9]+"
+	],
+	"int": [
+		" -[0-9]+",
+		"[0-9]+"
+	],
+	"bool": [
+		"true",
+		"false"
+	],
 
 	"assign": [
 		"\\+=",
@@ -25,33 +34,85 @@ token_types = {
 
 	"return": ["->"],
 
-	"binaryOp": ["&&", "\\|\\|", "\\^\\^"],
-	"numOp": ["\\+", "\\*", "/", "-", "%", "\\^"],
+	"binaryOp": [
+		"&&",
+		"\\|\\|",
+		"\\^\\^"
+	],
+	"numOp": [
+		"\\+",
+		"\\*",
+		"/",
+		"-",
+		"%",
+		"\\^"
+	],
 	"strOp": ["><"],
-	"boolOp": ["\\|", "&"],
-	"logicOp": [">=", "<=", "==", "!=", ">", "<"],
+	"boolOp": [
+		"\\|",
+		"&"
+	],
+	"logicOp": [
+		">=",
+		"<=",
+		"==",
+		"!=",
+		">",
+		"<"
+	],
 
-	"parenteses": ["\\(", "\\)", "\\[", "\\]", "\\{", "\\}"],
+	"parenteses": [
+		"\\(",
+		"\\)",
+		"\\[",
+		"\\]",
+		"\\{",
+		"\\}"
+	],
 
-	"type": ["(\n| )int(\n| )", "(\n| )str(\n| )", "(\n| )float(\n| )", "(\n| )bool(\n| )", "(\n| )func(\n| )", "(\n| )void(\n| )"],
-	"keyword": ["(\n| )const(\n| )", "(\n| )return(\n| )", "(\n| )fn(\n| )", "(\n| )for(\n| )", "(\n| )in(\n| )", "(\n| )elif(\n| )", "(\n| )if(\n| )", "(\n| )else(\n| )", "(\n| )while(\n| )", "(\n| )include(\n| )"],
+	"type": [
+		"(\n| )int(\n| )",
+		"(\n| )str(\n| )",
+		"(\n| )float(\n| )",
+		"(\n| )bool(\n| )",
+		"(\n| )func(\n| )",
+		"(\n| )void(\n| )",
+		"(\n| )struct(\n| )"
+	],
+	"keyword": [
+		"(\n| )const(\n| )",
+		"(\n| )return(\n| )",
+		"(\n| )fn(\n| )",
+		"(\n| )for(\n| )",
+		"(\n| )in(\n| )",
+		"(\n| )elif(\n| )",
+		"(\n| )if(\n| )",
+		"(\n| )else(\n| )",
+		"(\n| )while(\n| )",
+		"(\n| )include(\n| )",
+	],
 
 	"argSplit": [","],
 
-	"identifier": ["[a-z|A-Z|_]+"],
+	"identifier": ["[a-z|A-Z|0-9|_]+"],
 
-	"newline": ["\n", ";"]
+	"newline": ["\n"]
 }
 
-def parseTokens(text: str, debug: bool = False) -> tuple[list[dict[str, str]], dict] :
-	text = text.replace("\t", " ")
+def parseTokens(text: str,
+		debug: bool = False) -> tuple[list[dict[str,
+		str]],
+		dict] :
+	text = text.replace("\t",
+		" ")
 
 	regex = {}
 
 	tokens = []
 	for type in token_types :
 		for tkn in token_types[type] :
-			for i in re.finditer(tkn, text) :
+			for i in re.finditer(tkn,
+		text) :
 				add = True
 				span_i = i.span()
 				for t in tokens :
