@@ -94,7 +94,7 @@ token_types = {
 
 	"argSplit": [","],
 
-	"identifier": ["[a-z|A-Z|0-9|_]+"],
+	"identifier": ["[a-z|A-Z|0-9|_|.]+"],
 
 	"newline": ["\n"]
 }

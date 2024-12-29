@@ -37,6 +37,9 @@ with open(filename) as f :
 	text = f.read()
 	err_dumb = initError(text)
 
+errorStdout = []
+warnStdout = []
+
 errors = 0
 warnings = 0
 def err(line: list[dict[str, str]] | int, errType: str, errMsg: str, under: list[str], error: bool = True) :
@@ -44,10 +47,10 @@ def err(line: list[dict[str, str]] | int, errType: str, errMsg: str, under: list
 
 	if error :
 		errors += 1
+		errorStdout.append((line, errType, errMsg, under))
 	else :
 		warnings += 1
-
-	err_dumb(line, errType, errMsg, under, error)
+		warnStdout.append((line, errType, errMsg, under))
 
 from sectionparser import parseSections
 from tokenparser import parseTokens
@@ -160,6 +163,21 @@ def evalExpr(expr: list[dict[str, str]]) -> dict[str, str] | tuple[str, str] :
 				fnname = i["val"]
 				depth = 0
 				getting = True
+			elif "." in i["val"] :
+				name = i["val"]
+				base = name[:name.find(".")]
+				get = name[name.find(".")+1:]
+
+				if not base in vars :
+					return "UndefinedVariable", f"Variable \"{base}\" is not defined"
+
+				if not type(vars[base]["val"]) is dict :
+					return "MismatchedTypes", f"Variable \"{base}\" is not a structure"
+
+				if not get in vars[base]["val"] :
+					return "UndefinedVariable", f"Variable \"{i["val"]}\" is not defined"
+
+				parse.append(vars[base]["val"][get])
 			else :
 				if not i["val"] in vars :
 					return "UndefinedVariable", f"Variable \"{i["val"]}\" is not defined"
@@ -176,6 +194,10 @@ def evalExpr(expr: list[dict[str, str]]) -> dict[str, str] | tuple[str, str] :
 
 @addHandler
 def varDeclare(var_type: str, name: str, val: list[dict[str, str]], res: int = 0) :
+
+	if "." in name :
+		err(res, "BadName", f"Periods are forbidden in variable names", [name])
+		return
 
 	if name.startswith("_") :
 		err(res, "BadName", f"Having a variable name start with an underscore is bad practice, use \"{name.lstrip("_")}\" instead", [name], False)
@@ -221,6 +243,10 @@ def varDeclare(var_type: str, name: str, val: list[dict[str, str]], res: int = 0
 
 @addHandler
 def constDeclare(var_type: str, name: str, val: list[dict[str, str]], res: int = 0) :
+
+	if "." in name :
+		err(res, "BadName", f"Periods are forbidden in variable names", [name])
+		return
 
 	if name.startswith("_") :
 		err(res, "BadName", f"Having a variable name start with an underscore is bad practice, use \"{name.lstrip("_")}\" instead", [name], False)
@@ -491,24 +517,88 @@ def whileLoop(cond: list[dict[str, str]], body: list[dict], res: int = 0) :
 
 @addHandler
 def structDefine(name: str, params: list[list[dict[str, str]]], res: int = 0) :
+
+	if "." in name :
+		err(res, "BadName", f"Periods are forbidden in variable names", [name])
+		return
+
+	if name[0].upper() != name[0] :
+		err(res, "BadName", f"Structure name isn't camel case, use \"{name[0].upper()}{name[1:]}\" instead", [name], False)
+
 	if name in scopes[-1] :
 		err(res, "VariableRedeclare", f"Cannot redeclare var \"{name}\"", [name])
 		return
 
+	pars = []
+
+	for l in params :
+		pars.append({
+			"val": l[1]["val"],
+			"type": l[0]["val"],
+		})
+
+
 	scopes[-1][name] = {
 		"type": "struct",
 		"val": "struct",
-		"params": params
+		"params": pars
 	}
 
 @addHandler
 def structDeclare(name: str, struct: str, params: list[list[dict[str, str]]], res: int = 0) :
+
+	if "." in name :
+		err(res, "BadName", f"Periods are forbidden in variable names", [name])
+		return
+
 	vars = {}
 	for i in scopes :
 		vars.update(i)
+
 	if not struct in vars :
 		err(res, "UndefinedVariable", f"Structure {struct} is undefined", [struct])
 		return
+
+	pars = vars[struct]["params"]
+
+	act = []
+	for i in params :
+		ret = evalExpr(i)
+
+		if type(ret) is tuple :
+			err(res, ret[0], ret[1], [x["val"] for x in i])
+			return
+		if not(type(ret) is dict) : return
+
+		act.append(ret)
+
+	under = []
+	for i in params :
+		under.extend([x["val"] for x in i])
+
+
+	if len(act) != len(pars) :
+		if len(act) > len(pars) :
+			err(res, "TooManyParams", f"Expected {len(pars)} params, intead found {len(act)}", under)
+		if len(act) < len(pars) :
+			err(res, "TooFewParams", f"Expected {len(pars)} params, intead found {len(act)}", under)
+		return
+
+	pairs = {}
+
+	for n,i in enumerate(act) :
+		if i["type"] != pars[n]["type"] :
+			err(res, "MismatchedTypes", f"Expected {pars[n]["type"]}, intead found {i["type"]}", [x["val"] for x in params[n]])
+			return
+		pairs[pars[n]["val"]] = {
+			"val": i["val"],
+			"type": i["type"]
+		}
+
+	scopes[-1][name] = {
+		"val": deepcopy(pairs),
+		"type": struct
+	}
 
 def doSection(sec) :
 	global errors
@@ -538,7 +628,14 @@ col = "green"
 if warnings > 0 : col = "yellow"
 if errors > 0 : col = "red"
 
-cprint(f"\nProgram generated {warnings} warning(s) and {errors} error(s)", col)
+print()
+
+for i in warnStdout :
+	err_dumb(*i, False)
+for i in errorStdout :
+	err_dumb(*i, True)
+
+cprint(f"Program generated {warnings} warning(s) and {errors} error(s)", col)
 
 from translater import translate
 

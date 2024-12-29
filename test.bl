@@ -57,4 +57,6 @@ struct Point {
 	float y
 }
 
-Point p = 10, 10
+Point p = mutable_var + 3.0, 10 * 2 / 3
+
+println(p.x + .5)
