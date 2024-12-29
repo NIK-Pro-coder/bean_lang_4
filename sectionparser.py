@@ -14,7 +14,7 @@ def parseSections(tokens: list[dict[str, str]], err: Callable | None = None) -> 
 		"val": "EOF",
 		"type": "EOF"
 	})
-	sections = []
+	sections: list[dict] = []
 	grab = (x for x in tokens if not("comment" in x["type"].lower()))
 
 	def getNext() :
@@ -74,6 +74,10 @@ def parseSections(tokens: list[dict[str, str]], err: Callable | None = None) -> 
 		tkn_type = tkn["type"]
 		tkn_val = tkn["val"]
 
+		sections.append({
+			"line": line
+		})
+
 		if tkn_val == "struct" :
 			name = expect("identifier")
 			if not name : exit(1)
@@ -98,7 +102,7 @@ def parseSections(tokens: list[dict[str, str]], err: Callable | None = None) -> 
 						"identifier": "argSplit",
 						"argSplit": "type"
 					}[want]
-			sections.append({
+			sections[-1].update({
 				"type": "structDefine",
 				"fields": {
 					"name": name["val"],
@@ -124,7 +128,7 @@ def parseSections(tokens: list[dict[str, str]], err: Callable | None = None) -> 
 				val = until("newline")
 
 			if const :
-				sections.append({
+				sections[-1].update({
 					"type": "constDeclare",
 					"fields": {
 						"type": tkn["val"],
@@ -133,7 +137,7 @@ def parseSections(tokens: list[dict[str, str]], err: Callable | None = None) -> 
 					}
 				})
 			else :
-				sections.append({
+				sections[-1].update({
 					"type": "varDeclare",
 					"fields": {
 						"type": tkn["val"],
@@ -163,7 +167,7 @@ def parseSections(tokens: list[dict[str, str]], err: Callable | None = None) -> 
 				if not expect("!{") : exit(1)
 				el, _ = codeblock()
 
-			sections.append({
+			sections[-1].update({
 				"type": "ifStatement",
 				"fields": {
 					"cond": cond,
@@ -177,7 +181,7 @@ def parseSections(tokens: list[dict[str, str]], err: Callable | None = None) -> 
 			if ntk["type"] == "assign" :
 				action = ntk
 				val = until("newline")
-				sections.append({
+				sections[-1].update({
 					"type": "varUpdate",
 					"fields": {
 						"name": tkn["val"],
@@ -195,7 +199,7 @@ def parseSections(tokens: list[dict[str, str]], err: Callable | None = None) -> 
 					else :
 						params[-1].append(i)
 
-				sections.append({
+				sections[-1].update({
 					"type": "funcCall",
 					"fields": {
 						"name": tkn["val"],
@@ -212,7 +216,7 @@ def parseSections(tokens: list[dict[str, str]], err: Callable | None = None) -> 
 						params.append([])
 					else :
 						params[-1].append(i)
-				sections.append({
+				sections[-1].update({
 					"type": "structDeclare",
 					"fields": {
 						"name": ntk["val"],
@@ -225,24 +229,13 @@ def parseSections(tokens: list[dict[str, str]], err: Callable | None = None) -> 
 		elif tkn_val == "while" :
 			cond = until("!{")
 			res, _ = codeblock()
-			sections.append({
+			sections[-1].update({
 				"type": "whileLoop",
 				"fields": {
 					"cond": cond,
 					"res": res
 				}
 			})
-		elif tkn_val == "include" :
-			name = expect("string")
-			if not name : exit(1)
-			filename = name["val"].removeprefix('"').removesuffix('"')
-			with open(filename) as f :
-				text = f.read()
-			sections.extend(
-				parseSections(
-					parseTokens(text)
-				)
-			)
 		elif tkn_val == "for" :
 			iden = expect("identifier")
 			if not iden : exit(1)
@@ -250,7 +243,7 @@ def parseSections(tokens: list[dict[str, str]], err: Callable | None = None) -> 
 			if not expect("!in") : exit(1)
 			iterate = until("!{")
 			res, _ = codeblock()
-			sections.append({
+			sections[-1].update({
 				"type": "forLoop",
 				"fields": {
 					"name": name,
@@ -282,7 +275,7 @@ def parseSections(tokens: list[dict[str, str]], err: Callable | None = None) -> 
 			returnType = iden["val"]
 			if not expect("!{") : exit(1)
 			res, _ = codeblock()
-			sections.append({
+			sections[-1].update({
 				"type": "funcDefine",
 				"fields": {
 					"name": name,
@@ -307,13 +300,16 @@ def parseSections(tokens: list[dict[str, str]], err: Callable | None = None) -> 
 				else :
 					pars.append([])
 			pars = [x for x in pars if x]
-			sections.append({
+			sections[-1].update({
 				"type": "returnStatement",
 				"fields": {
 					"params": pars,
 				}
 			})
 		tkn = getNext()
+
+		if len(sections[-1].keys()) < 2 :
+			sections.pop(-1)
 
 	sections.sort(key=lambda x: precedence[x["type"]] if x["type"] in precedence else len(precedence))
 

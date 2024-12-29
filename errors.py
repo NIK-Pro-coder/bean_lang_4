@@ -15,7 +15,7 @@ def initError(string) :
 		elif type(line) is int :
 			num = line + 1
 
-			ln = [x for x in num_dict if num_dict[x] == line][0]
+			ln = [x for x in num_dict if num_dict[x] == num][0]
 		else : return
 
 		vals = [x["val"] for x in text[ln] if x["val"] != "\n"]

@@ -175,17 +175,7 @@ def evalExpr(expr: list[dict[str, str]]) -> dict[str, str] | tuple[str, str] :
 	return ret
 
 @addHandler
-def varDeclare(var_type: str, name: str, val: list[dict[str, str]]) :
-	res = [
-		{"val": var_type, "type": "identifier"},
-		{"val": name, "type": "identifier"},
-	]
-	if val :
-		res.append({
-			"val": "=",
-			"type": "assign"
-		})
-		res.extend(val)
+def varDeclare(var_type: str, name: str, val: list[dict[str, str]], res: int = 0) :
 
 	if name.startswith("_") :
 		err(res, "BadName", f"Having a variable name start with an underscore is bad practice, use \"{name.lstrip("_")}\" instead", [name], False)
@@ -230,18 +220,7 @@ def varDeclare(var_type: str, name: str, val: list[dict[str, str]]) :
 	all_scopes.append(deepcopy(scopes))
 
 @addHandler
-def constDeclare(var_type: str, name: str, val: list[dict[str, str]]) :
-	res = [
-		{"val": var_type, "type": "identifier"},
-		{"val": "const", "type": "keyword"},
-		{"val": name, "type": "identifier"},
-	]
-	if val :
-		res.append({
-			"val": "=",
-			"type": "assign"
-		})
-		res.extend(val)
+def constDeclare(var_type: str, name: str, val: list[dict[str, str]], res: int = 0) :
 
 	if name.startswith("_") :
 		err(res, "BadName", f"Having a variable name start with an underscore is bad practice, use \"{name.lstrip("_")}\" instead", [name], False)
@@ -284,12 +263,7 @@ def constDeclare(var_type: str, name: str, val: list[dict[str, str]]) :
 	all_scopes.append(deepcopy(scopes))
 
 @addHandler
-def varUpdate(name: str, act: str, val: list[dict[str, str]]) :
-	res = [
-		{"val": name, "type": "identifier"},
-		{"val": act, "type": "assign"},
-	]
-	res.extend(val)
+def varUpdate(name: str, act: str, val: list[dict[str, str]], res: int = 0) :
 
 	actual = deepcopy(val)
 
@@ -344,25 +318,7 @@ def varUpdate(name: str, act: str, val: list[dict[str, str]]) :
 	all_scopes.append(deepcopy(scopes))
 
 @addHandler
-def funcDefine(name: str, params: list[dict[str, str]], ret: str, body: list[dict]) :
-	res = [
-		{"val": "fn", "type": "keyword"},
-		{"val": name, "type": "identifier"},
-		{"val": "(", "type": "parenteses"}
-	]
-	for i in params :
-		res.append(
-			{"val": i["type"], "type": "type"}
-		)
-		res.append(
-			{"val": i["val"], "type": "identifier"}
-		)
-	res.append({"val": ")", "type": "parenteses"})
-	res.append({"val": "->", "type": "return"})
-	res.append({"val": ret, "type": "type"})
-	res.append({"val": "{", "type": "parenteses"})
-	if len(body) == 0 :
-		res.append({"val": "}", "type": "parenteses"})
+def funcDefine(name: str, params: list[dict[str, str]], ret: str, body: list[dict], res: int = 0) :
 
 	if not(name in scopes[-1]) :
 		scopes[-1][name] = {
@@ -385,14 +341,7 @@ def funcDefine(name: str, params: list[dict[str, str]], ret: str, body: list[dic
 	all_scopes.append(deepcopy(scopes))
 
 @addHandler
-def returnStatement(pars: list[list[dict[str, str]]]) -> list[dict[str, str]] | None :
-	res = [
-		{"val": "return", "type": "keyword"}
-	]
-	for i in pars :
-		res.extend(i)
-		res.append({"val": ",", "type": "argSplit"})
-	res.pop(-1)
+def returnStatement(pars: list[list[dict[str, str]]], res: int = 0) -> list[dict[str, str]] | None :
 
 	if len(scopes) == 1 :
 		err(res, "BaseLevelReturn", "Returning from global scope doesn't really do anything", [x["val"] for x in res], False)
@@ -466,16 +415,7 @@ def callFunc(name: str, params: list[list[dict[str, str]]]) -> None | list[dict[
 	return returns
 
 @addHandler
-def funcCall(name: str, params: list[list[dict[str, str]]]) :
-	res = [
-		{"val": name, "type": "identifier"},
-		{"val": "(", "type": "parenteses"}
-	]
-	for n,i in enumerate(params) :
-		res.extend(i)
-		if n != len(params) - 1 :
-			res.append({"val": ",", "type": "argSplit"})
-	res.append({"val": ")", "type": "parenteses"})
+def funcCall(name: str, params: list[list[dict[str, str]]], res: int = 0) :
 
 	returns = callFunc(name, params)
 
@@ -496,12 +436,7 @@ falsy = {
 }
 
 @addHandler
-def ifStatement(cond: list[dict[str, str]], body: list[dict], elif_body: list[dict], else_body: list[dict]) :
-	res = [
-		{"val": "if", "type": "identifier"}
-	]
-	res.extend(cond)
-	res.append({"val": "{", "type": "parenteses"})
+def ifStatement(cond: list[dict[str, str]], body: list[dict], elif_body: list[dict], else_body: list[dict], res: int = 0) :
 
 	ret = evalExpr(cond)
 
@@ -531,13 +466,7 @@ def ifStatement(cond: list[dict[str, str]], body: list[dict], elif_body: list[di
 			doSection(i)
 
 @addHandler
-def whileLoop(cond: list[dict[str, str]], body: list[dict]) :
-	res = [
-		{"val": "while", "type": "identifier"}
-	]
-	res.extend(cond)
-	res.append({"val": "{", "type": "parenteses"})
-
+def whileLoop(cond: list[dict[str, str]], body: list[dict], res: int = 0) :
 	if not [x for x in body if x["type"] == "varUpdate"] :
 		err(res, "InfiniteLoop", "While loop contains no variable changes, it will be infinite", [])
 		return
@@ -561,13 +490,7 @@ def whileLoop(cond: list[dict[str, str]], body: list[dict]) :
 		if not(type(ret) is dict) : return
 
 @addHandler
-def structDefine(name: str, params: list[list[dict[str, str]]]) :
-	res = [
-		{"val": "struct", "type": "identifier"},
-		{"val": name, "type": "identifier"},
-		{"val": "{", "type": "parenteses"}
-	]
-
+def structDefine(name: str, params: list[list[dict[str, str]]], res: int = 0) :
 	if name in scopes[-1] :
 		err(res, "VariableRedeclare", f"Cannot redeclare var \"{name}\"", [name])
 		return
@@ -578,15 +501,27 @@ def structDefine(name: str, params: list[list[dict[str, str]]]) :
 		"params": params
 	}
 
+@addHandler
+def structDeclare(name: str, struct: str, params: list[list[dict[str, str]]], res: int = 0) :
+	vars = {}
+	for i in scopes :
+		vars.update(i)
+	if not struct in vars :
+		err(res, "UndefinedVariable", f"Structure {struct} is undefined", [struct])
+		return
+
 def doSection(sec) :
 	global errors
 
 	sec_type = sec["type"]
 	sec_fields = sec["fields"]
 
+	passinto = list(sec_fields.values())
+	passinto.append(sec["line"])
+
 	if sec_type in handlers :
 		return handlers[sec_type](
-			*sec_fields.values()
+			*passinto
 		)
 
 	cprint(f"A section handler for sections of type \"{sec_type}\", has not been implemented", "red")
@@ -599,7 +534,11 @@ if "save-vars" in flags :
 	with open(filename[:filename.rfind(".")] + "_variables.json", "w") as f :
 		f.write(json.dumps(cleanJson(all_scopes)))
 
-print(f"\nProgram generated {warnings} warning(s) and {errors} error(s)")
+col = "green"
+if warnings > 0 : col = "yellow"
+if errors > 0 : col = "red"
+
+cprint(f"\nProgram generated {warnings} warning(s) and {errors} error(s)", col)
 
 from translater import translate
 
