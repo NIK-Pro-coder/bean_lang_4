@@ -139,10 +139,28 @@ def parseTokens(text: str,
 
 	tokens = [
 		{
-			"val": x["val"].group().strip() if x["type"] != "newline" else x["val"].group(),
+			"val": x["val"].group(),
 			"type": x["type"]
 		}
 		for x in tokens
 	]
 
-	return tokens, regex
+	new = []
+
+	for i in tokens :
+		if i["type"] == "longComment" :
+			for l in range(i["val"].count("\n")) :
+				new.append({"val": "\n", "type": "newline"})
+			new.append(i)
+		elif i["type"] != "newline" and "\n" in i["val"] :
+			for l in range(len(i["val"]) - len(i["val"].lstrip("\n"))) :
+				new.append({"val": "\n", "type": "newline"})
+			new.append({"val": i["val"].strip("\n "), "type": i["type"]})
+			for l in range(len(i["val"]) - len(i["val"].rstrip("\n"))) :
+				new.append({"val": "\n", "type": "newline"})
+		elif " " in i["val"] :
+			new.append({"val": i["val"].strip(" "), "type": i["type"]})
+		else :
+			new.append(i)
+
+	return new, regex

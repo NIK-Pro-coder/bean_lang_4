@@ -17,15 +17,17 @@ def parseSections(tokens: list[dict[str, str]], err: Callable | None = None) -> 
 	sections: list[dict] = []
 	grab = (x for x in tokens if not("comment" in x["type"].lower()))
 
-	def getNext() :
+	def getNext(newline: bool = True) :
 		global line
 
 		try :
 			tkn = next(grab)
 		except StopIteration :
 			return {"val": "EOF", "type": "EOF"}
-		if tkn["val"] == "\n" :
+
+		if tkn["val"] == "\n" and newline :
 			line += 1
+
 		return tkn
 
 	tkn = getNext()
@@ -56,16 +58,18 @@ def parseSections(tokens: list[dict[str, str]], err: Callable | None = None) -> 
 
 		return tkns
 
-	def codeblock() -> tuple[list[dict[str, dict[str, str]]], dict[str, str]] :
+	def codeblock(newline: bool = True) -> tuple[list[dict[str, dict[str, str]]], dict[str, str]] :
 		depth = 1
 		block = []
-		tkn = getNext()
+		tkn = getNext(False)
 		while depth > 0 :
 			if tkn["val"] == "}" : depth -= 1
 			if tkn["val"] == "{" : depth += 1
 			if depth > 0 :
 				block.append(tkn)
-			tkn = getNext()
+				tkn = getNext(False)
+			else :
+				tkn = getNext()
 
 		return parseSections(block), tkn
 
@@ -146,12 +150,12 @@ def parseSections(tokens: list[dict[str, str]], err: Callable | None = None) -> 
 					}
 				})
 		elif tkn_val == "if" :
+
 			cond = until("!{")
 			if not cond : exit(1)
 			res, ntk = codeblock()
 
 			elf = []
-
 
 			while ntk["val"] == "elif" :
 				elif_cond = until("!{")

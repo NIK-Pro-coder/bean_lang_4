@@ -6,7 +6,7 @@
 */
 
 # constDeclare
-int const CONSToNT_VAR = 100
+int const CONSTANT_VAR = 100
 
 # varDeclare
 int mutable_var = 10
